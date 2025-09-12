@@ -1,9 +1,12 @@
+export type ComplaintType = 'Technical' | 'Billing' | 'Service' | 'General' | 'Product' | 'Account' | 'Other';
+
 export interface Complaint {
   id: string;
   name: string;
   email: string;
   complaint: string;
   complaint_html?: string;
+  complaint_type: ComplaintType;
   status: 'Pending' | 'Resolved';
   attachments?: any[];
   created_at: string;
@@ -46,6 +49,7 @@ export interface CreateComplaintRequest {
   name: string;
   email: string;
   complaint: string;
+  complaint_type: ComplaintType;
 }
 
 export interface LoginRequest {

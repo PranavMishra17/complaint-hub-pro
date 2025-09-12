@@ -3,6 +3,8 @@ import {
   createComplaint,
   getAllComplaints,
   getComplaintById,
+  getComplaintByTrackingId,
+  withdrawComplaint,
   updateComplaint,
   deleteComplaint
 } from '../controllers/complaintsController';
@@ -23,6 +25,15 @@ const router = express.Router();
 // Public routes
 // POST /api/complaints
 router.post('/', validateComplaint, handleValidationErrors, createComplaint);
+
+// GET /api/complaints/public/:trackingId
+router.get('/public/:trackingId', (req, res, next) => {
+  console.log('🚦 Route matched: /public/:trackingId with trackingId:', req.params.trackingId);
+  next();
+}, getComplaintByTrackingId);
+
+// PATCH /api/complaints/public/:trackingId/withdraw
+router.patch('/public/:trackingId/withdraw', withdrawComplaint);
 
 // Protected admin routes
 // GET /api/complaints

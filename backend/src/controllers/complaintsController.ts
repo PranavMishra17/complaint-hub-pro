@@ -5,7 +5,7 @@ import { AuthenticatedRequest, CreateComplaintRequest, UpdateComplaintRequest, P
 
 export const createComplaint = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, complaint }: CreateComplaintRequest = req.body;
+    const { name, email, complaint, complaint_type }: CreateComplaintRequest = req.body;
     
     const complaintHtml = await processMarkdown(complaint);
     
@@ -16,6 +16,7 @@ export const createComplaint = async (req: Request, res: Response): Promise<void
         email,
         complaint,
         complaint_html: complaintHtml,
+        complaint_type: complaint_type || 'General',
         status: 'Pending',
         client_ip: req.ip,
         user_agent: req.get('User-Agent') || ''
@@ -172,6 +173,148 @@ export const updateComplaint = async (req: AuthenticatedRequest, res: Response):
     });
   } catch (error) {
     console.error('Update complaint error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+};
+
+export const getComplaintByTrackingId = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { trackingId } = req.params;
+    console.log('🔍 getComplaintByTrackingId called with:', trackingId);
+
+    if (!trackingId) {
+      res.status(400).json({
+        success: false,
+        error: 'Tracking ID is required'
+      });
+      return;
+    }
+    
+    // Get all complaints and filter by tracking ID (first part of UUID)
+    const { data: complaints, error } = await supabase
+      .from('complaints')
+      .select(`
+        *,
+        complaint_comments (
+          *,
+          admin_users (name, email)
+        )
+      `);
+      
+    if (error) {
+      console.error('Database error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Database query failed'
+      });
+      return;
+    }
+    
+    // Filter complaints by tracking ID (first 8 characters of UUID)
+    const matchingComplaints = complaints?.filter(complaint => {
+      const complaintTrackingId = complaint.id.split('-')[0].toUpperCase();
+      return complaintTrackingId === trackingId.toUpperCase();
+    }) || [];
+
+    if (matchingComplaints.length === 0) {
+      res.status(404).json({
+        success: false,
+        error: 'Complaint not found with the provided tracking ID'
+      });
+      return;
+    }
+
+    // Filter out internal comments for public view
+    const complaint = matchingComplaints[0];
+    if (complaint.complaint_comments) {
+      complaint.complaint_comments = complaint.complaint_comments.filter(
+        (comment: any) => !comment.is_internal
+      );
+    }
+
+    res.json({
+      success: true,
+      data: complaint
+    });
+  } catch (error) {
+    console.error('Get complaint by tracking ID error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+};
+
+export const withdrawComplaint = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { trackingId } = req.params;
+    
+
+    if (!trackingId) {
+      res.status(400).json({
+        success: false,
+        error: 'Tracking ID is required'
+      });
+      return;
+    }
+    // First find the complaint by tracking ID
+    const { data: complaints, error: selectError } = await supabase
+      .from('complaints')
+      .select('*');
+      
+    if (selectError) {
+      console.error('Database error:', selectError);
+      res.status(500).json({
+        success: false,
+        error: 'Database query failed'
+      });
+      return;
+    }
+    
+    // Filter complaints by tracking ID
+    const matchingComplaints = complaints?.filter(complaint => {
+      const complaintTrackingId = complaint.id.split('-')[0].toUpperCase();
+      return complaintTrackingId === trackingId.toUpperCase();
+    }) || [];
+    
+    if (matchingComplaints.length === 0) {
+      res.status(404).json({
+        success: false,
+        error: 'Complaint not found with the provided tracking ID'
+      });
+      return;
+    }
+    
+    // Update the found complaint
+    const targetComplaint = matchingComplaints[0];
+    const { data, error } = await supabase
+      .from('complaints')
+      .update({ 
+        status: 'Withdrawn',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', targetComplaint.id)
+      .select()
+      .single();
+
+    if (error || !data) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update complaint status'
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: 'Complaint withdrawn successfully',
+      data
+    });
+  } catch (error) {
+    console.error('Withdraw complaint error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error'

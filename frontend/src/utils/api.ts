@@ -58,9 +58,25 @@ api.interceptors.response.use(
     });
 
     if (error.response?.status === 401) {
-      console.log('🔐 Unauthorized - removing token and redirecting');
-      localStorage.removeItem('auth_token');
-      window.location.href = '/admin/login';
+      console.log('🔐 Unauthorized - token may be expired');
+      
+      // Check if this is an auth-related endpoint or token validation failure
+      const isAuthEndpoint = error.config?.url?.includes('/auth/');
+      const errorMessage = error.response?.data?.error || '';
+      const isTokenRelatedError = errorMessage.includes('token') || errorMessage.includes('expired') || errorMessage.includes('required');
+      
+      // Only auto-redirect for auth endpoint failures or clear token issues
+      if (isAuthEndpoint || isTokenRelatedError) {
+        console.log('🚪 Redirecting to login due to authentication failure');
+        localStorage.removeItem('auth_token');
+        
+        // Only redirect if we're on an admin page to avoid interfering with public pages
+        if (window.location.pathname.startsWith('/admin/') && !window.location.pathname.includes('/login')) {
+          window.location.href = '/admin/login';
+        }
+      } else {
+        console.log('🤔 401 error but not redirecting - may be a permission issue');
+      }
     }
     return Promise.reject(error);
   }
@@ -71,6 +87,12 @@ export const complaintsApi = {
   // Public API
   createComplaint: (data: { name: string; email: string; complaint: string }) =>
     api.post('/complaints', data),
+  
+  getComplaintByTrackingId: (trackingId: string) =>
+    api.get(`/complaints/public/${trackingId}`),
+  
+  withdrawComplaint: (trackingId: string) =>
+    api.patch(`/complaints/public/${trackingId}/withdraw`),
 
   // Admin API
   getAllComplaints: (params?: { page?: number; limit?: number; status?: string }) =>

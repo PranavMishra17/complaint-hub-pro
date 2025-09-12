@@ -142,6 +142,10 @@ This creates a demo admin user:
 
 1. **Start Backend Server:**
 ```bash
+# Kill all running node servers
+taskkill /f /im node.exe
+
+#start backend
 cd backend
 npm run build  # Build TypeScript
 npm run dev     # Start with nodemon (or npm start for production)

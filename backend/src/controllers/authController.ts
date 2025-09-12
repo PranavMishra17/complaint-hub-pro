@@ -40,11 +40,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Update last login
-    await supabase
-      .from('admin_users')
-      .update({ last_login: new Date().toISOString() })
-      .eq('id', user.id);
+    // Note: last_login column removed - could add back if needed
 
     const token = jwt.sign(
       { 
@@ -80,13 +76,36 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const me = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
+    console.log('👤 AuthController.me: Starting user fetch', {
+      userId: req.user!.id,
+      userEmail: req.user!.email,
+      userRole: req.user!.role,
+      timestamp: new Date().toISOString()
+    });
+
     const { data: user, error } = await supabase
       .from('admin_users')
-      .select('id, email, name, role, created_at, last_login')
+      .select('id, email, name, role, created_at')
       .eq('id', req.user!.id)
       .single();
 
+    console.log('📊 AuthController.me: Database query result', {
+      hasUser: !!user,
+      hasError: !!error,
+      error: error?.message,
+      errorCode: error?.code,
+      userId: user?.id,
+      userEmail: user?.email,
+      userRole: user?.role,
+      timestamp: new Date().toISOString()
+    });
+
     if (error || !user) {
+      console.log('❌ AuthController.me: User not found, returning 404', {
+        reason: error ? 'Database error' : 'No user data',
+        error: error?.message,
+        timestamp: new Date().toISOString()
+      });
       res.status(404).json({
         success: false,
         error: 'User not found'
@@ -94,12 +113,18 @@ export const me = async (req: AuthenticatedRequest, res: Response): Promise<void
       return;
     }
 
+    console.log('✅ AuthController.me: User found, returning data');
     res.json({
       success: true,
       data: user
     });
-  } catch (error) {
-    console.error('Get user error:', error);
+  } catch (error: any) {
+    console.error('❌ AuthController.me: Exception occurred:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack?.substring(0, 300),
+      timestamp: new Date().toISOString()
+    });
     res.status(500).json({
       success: false,
       error: 'Internal server error'

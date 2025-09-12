@@ -1,0 +1,184 @@
+/* Enhanced MDEditor styling */
+.w-md-editor {
+  background-color: #ffffff;
+}
+
+.w-md-editor.w-md-editor-focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* Toolbar styling */
+.w-md-editor-toolbar {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 8px 12px;
+}
+
+.w-md-editor-toolbar ul {
+  margin: 0;
+}
+
+.w-md-editor-toolbar li button {
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin: 0 2px;
+  color: #4b5563;
+  transition: all 0.15s ease-in-out;
+  font-size: 14px;
+  min-width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.w-md-editor-toolbar li button:hover {
+  background-color: #e5e7eb;
+  border-color: #d1d5db;
+  color: #1f2937;
+}
+
+.w-md-editor-toolbar li button.active,
+.w-md-editor-toolbar li button:focus {
+  background-color: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  box-shadow: 0 0 0 1px #93c5fd;
+}
+
+/* Remove help button or style it better */
+.w-md-editor-toolbar li:last-child button {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.w-md-editor-toolbar li:last-child button:hover {
+  background-color: #e5e7eb;
+}
+
+/* Text area styling */
+.w-md-editor-text-textarea {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 16px;
+  border: none;
+  outline: none;
+  resize: none;
+}
+
+.w-md-editor-text-textarea:focus {
+  outline: none;
+}
+
+/* Preview area styling */
+.w-md-editor-preview {
+  padding: 16px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+}
+
+.w-md-editor-preview h1,
+.w-md-editor-preview h2,
+.w-md-editor-preview h3,
+.w-md-editor-preview h4,
+.w-md-editor-preview h5,
+.w-md-editor-preview h6 {
+  color: #1f2937;
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.w-md-editor-preview h1 {
+  font-size: 1.875rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.w-md-editor-preview h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.25rem;
+}
+
+.w-md-editor-preview h3 {
+  font-size: 1.25rem;
+}
+
+.w-md-editor-preview p {
+  margin-bottom: 1em;
+  color: #374151;
+}
+
+.w-md-editor-preview ul,
+.w-md-editor-preview ol {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+.w-md-editor-preview li {
+  margin-bottom: 0.25em;
+  color: #374151;
+}
+
+.w-md-editor-preview blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1rem;
+  margin: 1em 0;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.w-md-editor-preview code {
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 0.875em;
+  color: #dc2626;
+}
+
+.w-md-editor-preview pre {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.w-md-editor-preview pre code {
+  background-color: transparent;
+  color: #f9fafb;
+  padding: 0;
+}
+
+/* Split view adjustments */
+.w-md-editor.w-md-editor-view .w-md-editor-text {
+  border-right: 1px solid #e2e8f0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .w-md-editor-toolbar {
+    padding: 6px 8px;
+  }
+  
+  .w-md-editor-toolbar li button {
+    padding: 4px 6px;
+    margin: 0 1px;
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  .w-md-editor-text-textarea,
+  .w-md-editor-preview {
+    padding: 12px;
+    font-size: 13px;
+  }
+}

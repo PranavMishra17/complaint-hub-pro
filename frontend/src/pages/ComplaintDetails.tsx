@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { complaintsApi } from '../utils/api';
+import { useAuth } from '../contexts/AuthContext';
 import type { ComplaintWithComments, CreateCommentRequest } from '../types';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -18,11 +19,18 @@ const commentSchema = z.object({
 type CommentFormData = z.infer<typeof commentSchema>;
 
 const ComplaintDetails: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, trackingId } = useParams<{ id?: string; trackingId?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [commentText, setCommentText] = useState('');
   const [showCommentForm, setShowCommentForm] = useState(false);
+  
+  // Determine if this is public or admin view
+  const isPublicView = location.pathname.includes('/complaint/') && !location.pathname.includes('/admin');
+  const isAdminView = user && (user.role === 'admin' || user.role === 'agent');
+  const complaintIdentifier = trackingId || id;
 
   const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<CommentFormData>({
     resolver: zodResolver(commentSchema),
@@ -30,11 +38,19 @@ const ComplaintDetails: React.FC = () => {
   });
 
   const { data: complaint, isLoading, error } = useQuery({
-    queryKey: ['complaint', id],
+    queryKey: ['complaint', complaintIdentifier, isPublicView ? 'public' : 'admin'],
     queryFn: async () => {
-      if (!id) throw new Error('Complaint ID is required');
-      const response = await complaintsApi.getComplaint(id);
-      return response.data.data as ComplaintWithComments;
+      if (!complaintIdentifier) throw new Error('Complaint identifier is required');
+      
+      if (isPublicView && trackingId) {
+        const response = await complaintsApi.getComplaintByTrackingId(trackingId);
+        return response.data.data as ComplaintWithComments;
+      } else if (id) {
+        const response = await complaintsApi.getComplaint(id);
+        return response.data.data as ComplaintWithComments;
+      }
+      
+      throw new Error('Invalid complaint identifier');
     }
   });
 
@@ -44,11 +60,25 @@ const ComplaintDetails: React.FC = () => {
       return complaintsApi.updateComplaint(id, { status });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['complaint', id] });
+      queryClient.invalidateQueries({ queryKey: ['complaint', complaintIdentifier] });
       toast.success('Status updated successfully!');
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Failed to update status');
+    }
+  });
+  
+  const withdrawComplaintMutation = useMutation({
+    mutationFn: async () => {
+      if (!trackingId) throw new Error('Tracking ID is required');
+      return complaintsApi.withdrawComplaint(trackingId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['complaint', complaintIdentifier] });
+      toast.success('Complaint withdrawn successfully!');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to withdraw complaint');
     }
   });
 
@@ -58,7 +88,7 @@ const ComplaintDetails: React.FC = () => {
       return complaintsApi.createComment(id, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['complaint', id] });
+      queryClient.invalidateQueries({ queryKey: ['complaint', complaintIdentifier] });
       toast.success('Comment added successfully!');
       reset();
       setCommentText('');
@@ -73,6 +103,12 @@ const ComplaintDetails: React.FC = () => {
     if (!complaint) return;
     const newStatus = complaint.status === 'Pending' ? 'Resolved' : 'Pending';
     updateStatusMutation.mutate(newStatus);
+  };
+  
+  const handleWithdraw = () => {
+    if (window.confirm('Are you sure you want to withdraw this complaint? This action cannot be undone.')) {
+      withdrawComplaintMutation.mutate();
+    }
   };
 
   const onSubmitComment = (data: CommentFormData) => {
@@ -103,10 +139,10 @@ const ComplaintDetails: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Complaint Not Found</h2>
           <p className="text-gray-600 mb-4">The complaint you're looking for doesn't exist or has been removed.</p>
           <button
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={() => isPublicView ? navigate('/') : navigate('/admin/dashboard')}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
-            Back to Dashboard
+            {isPublicView ? 'Back to Home' : 'Back to Dashboard'}
           </button>
         </div>
       </div>
@@ -121,10 +157,10 @@ const ComplaintDetails: React.FC = () => {
           <div className="flex justify-between items-center py-6">
             <div>
               <button
-                onClick={() => navigate('/admin/dashboard')}
+                onClick={() => isPublicView ? navigate('/') : navigate('/admin/dashboard')}
                 className="text-blue-600 hover:text-blue-800 mb-2"
               >
-                ← Back to Dashboard
+                ← {isPublicView ? 'Back to Home' : 'Back to Dashboard'}
               </button>
               <h1 className="text-3xl font-bold text-gray-900">
                 Complaint Details
@@ -134,17 +170,28 @@ const ComplaintDetails: React.FC = () => {
               <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full border ${getStatusColor(complaint.status)}`}>
                 {complaint.status}
               </span>
-              <button
-                onClick={handleStatusToggle}
-                disabled={updateStatusMutation.isPending}
-                className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-                  complaint.status === 'Pending'
-                    ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-yellow-600 text-white hover:bg-yellow-700'
-                }`}
-              >
-                Mark as {complaint.status === 'Pending' ? 'Resolved' : 'Pending'}
-              </button>
+              {isAdminView && (
+                <button
+                  onClick={handleStatusToggle}
+                  disabled={updateStatusMutation.isPending}
+                  className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                    complaint.status === 'Pending'
+                      ? 'bg-green-600 text-white hover:bg-green-700'
+                      : 'bg-yellow-600 text-white hover:bg-yellow-700'
+                  }`}
+                >
+                  Mark as {complaint.status === 'Pending' ? 'Resolved' : 'Pending'}
+                </button>
+              )}
+              {isPublicView && complaint.status === 'Pending' && (
+                <button
+                  onClick={handleWithdraw}
+                  disabled={withdrawComplaintMutation.isPending}
+                  className="px-4 py-2 rounded-md font-medium text-sm bg-red-600 text-white hover:bg-red-700 transition-colors"
+                >
+                  {withdrawComplaintMutation.isPending ? 'Withdrawing...' : 'Withdraw Complaint'}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -174,6 +221,14 @@ const ComplaintDetails: React.FC = () => {
                     {format(new Date(complaint.created_at), 'MMMM dd, yyyy at HH:mm')}
                   </p>
                 </div>
+                {isPublicView && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Tracking ID</h3>
+                    <p className="mt-1 text-sm text-gray-900 font-mono">
+                      {complaint.id.split('-')[0].toUpperCase()}
+                    </p>
+                  </div>
+                )}
                 {complaint.resolved_at && (
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Resolved on</h3>
@@ -202,17 +257,19 @@ const ComplaintDetails: React.FC = () => {
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex justify-between items-center">
                   <h2 className="text-xl font-semibold text-gray-900">Comments</h2>
-                  <button
-                    onClick={() => setShowCommentForm(!showCommentForm)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
-                  >
-                    Add Comment
-                  </button>
+                  {isAdminView && (
+                    <button
+                      onClick={() => setShowCommentForm(!showCommentForm)}
+                      className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
+                    >
+                      Add Comment
+                    </button>
+                  )}
                 </div>
               </div>
 
               {/* Add Comment Form */}
-              {showCommentForm && (
+              {isAdminView && showCommentForm && (
                 <div className="px-6 py-4 border-b border-gray-200">
                   <form onSubmit={handleSubmit(onSubmitComment)} className="space-y-4">
                     <div>

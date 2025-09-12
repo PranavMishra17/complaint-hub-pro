@@ -11,7 +11,8 @@
       "Bash(npm start)",
       "Bash(curl:*)",
       "Bash(npx vite:*)",
-      "Bash(/bashes)"
+      "Bash(/bashes)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

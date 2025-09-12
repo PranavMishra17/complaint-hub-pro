@@ -107,7 +107,7 @@ app.get('/health', (_req, res) => {
 });
 
 // Request logging middleware
-app.use('/api', (req, res, next) => {
+app.use('/api', (req, _res, next) => {
   console.log('📝 API Request:', {
     method: req.method,
     url: req.url,

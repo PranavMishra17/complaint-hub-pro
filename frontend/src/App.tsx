@@ -36,6 +36,7 @@ function App() {
               {/* Public Routes */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/complaint/submit" element={<ComplaintForm />} />
+              <Route path="/complaint/:trackingId" element={<ComplaintDetails />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               
               {/* Protected Admin Routes */}
