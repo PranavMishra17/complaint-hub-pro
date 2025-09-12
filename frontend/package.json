@@ -12,10 +12,17 @@
     "preview": "vite preview",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["complaint", "management", "frontend", "react", "typescript"],
+  "keywords": [
+    "complaint",
+    "management",
+    "frontend",
+    "react",
+    "typescript"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.1",
     "@supabase/supabase-js": "^2.57.4",
     "@tanstack/react-query": "^5.87.4",
@@ -29,8 +36,8 @@
     "react-dom": "^19.1.1",
     "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.62.0",
-    "react-router-dom": "^7.1.1",
     "react-hot-toast": "^2.4.1",
+    "react-router-dom": "^7.1.1",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.8"
   },

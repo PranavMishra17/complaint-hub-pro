@@ -1,244 +1,489 @@
 # Complaint Management System
 
-A production-ready complaint management system built with React, TypeScript, Node.js, Express, and Supabase. Features include client complaint submissions with markdown support, file uploads, admin dashboard, real-time updates, and comprehensive security measures.
+A complete, production-ready complaint management system built with React, TypeScript, Node.js, Express, and Supabase. Features client complaint submissions with markdown support, admin dashboard with commenting system, and comprehensive security measures.
 
 ## 🚀 Features
 
-### Client Features
+### Public Features
 - **Complaint Submission**: Rich form with markdown editor support
-- **File Uploads**: Support for images, PDFs, and text files (max 3 files, 5MB each)
-- **Real-time Updates**: Live status updates via Supabase Realtime
-- **Responsive Design**: Mobile-first responsive interface
-- **Tracking System**: Unique tracking IDs for complaint follow-up
+- **Form Validation**: Client-side and server-side validation with Zod schemas
+- **Responsive Design**: Mobile-first responsive interface built with Tailwind CSS
+- **Tracking System**: Unique tracking IDs generated for each complaint
+- **Success Confirmation**: Clear confirmation with tracking ID display
 
 ### Admin Features
-- **Dashboard**: Comprehensive complaint management interface
-- **Status Management**: Toggle complaints between Pending/Resolved
-- **Comments System**: Internal and external comments with markdown support
-- **File Management**: View and manage uploaded attachments
-- **Real-time Updates**: Live dashboard updates
-- **Pagination**: Efficient data loading with pagination
+- **Authentication**: Secure JWT-based login system
+- **Dashboard**: Comprehensive complaint management interface with pagination
+- **Status Management**: Toggle complaints between Pending/Resolved states
+- **Comments System**: Add internal and public comments with markdown support
+- **Complaint Details**: Full complaint view with threaded comments
+- **Real-time Updates**: Live dashboard updates using React Query
+- **Role-based Access**: Admin and agent role management
 
 ### Security Features
-- **Authentication**: JWT-based admin authentication with role management
-- **Input Validation**: Comprehensive server-side validation and sanitization
-- **Rate Limiting**: Prevents spam and abuse
-- **File Security**: Type validation, size limits, and secure storage
-- **CORS Protection**: Configured for production domains
-- **SQL Injection Prevention**: Parameterized queries with Supabase
-- **XSS Prevention**: HTML sanitization with DOMPurify
+- **JWT Authentication**: Secure token-based authentication with role verification
+- **Input Validation**: Comprehensive server-side validation using express-validator
+- **Rate Limiting**: API endpoint protection against abuse
+- **HTML Sanitization**: XSS prevention with DOMPurify
+- **CORS Protection**: Configured for specific origins
+- **Security Headers**: Comprehensive security headers via Helmet.js
+- **Environment Variables**: Secure configuration management
 
-## 🏗️ Architecture
+## 🏗️ System Architecture
 
 ### Technology Stack
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
 - **Backend**: Node.js + Express + TypeScript
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: JWT + bcrypt
-- **File Storage**: Supabase Storage
-- **Real-time**: Supabase Realtime
+- **State Management**: React Query (TanStack Query)
+- **Form Handling**: React Hook Form + Zod validation
+- **Styling**: Tailwind CSS + Custom components
 
 ### Project Structure
 ```
 complaint-hub-pro/
 ├── backend/
 │   ├── src/
-│   │   ├── controllers/     # Route handlers
-│   │   ├── middleware/      # Authentication, validation, security
-│   │   ├── routes/          # API routes
-│   │   ├── config/          # Database and app configuration
-│   │   ├── types/           # TypeScript type definitions
-│   │   └── utils/           # Helper functions
-│   └── uploads/             # File upload directory
+│   │   ├── controllers/      # Route handlers (auth, complaints, comments)
+│   │   ├── middleware/       # Auth, validation, error handling
+│   │   ├── routes/           # Express routes with middleware chains
+│   │   ├── config/           # Database configuration
+│   │   ├── types/            # TypeScript interfaces and types
+│   │   └── utils/            # Helper functions (markdown processing)
+│   ├── uploads/              # File upload directory
+│   ├── .env                  # Environment variables
+│   ├── package.json          # Dependencies and scripts
+│   └── tsconfig.json         # TypeScript configuration
 ├── frontend/
 │   ├── src/
-│   │   ├── components/      # Reusable React components
-│   │   ├── pages/           # Page components
-│   │   ├── hooks/           # Custom React hooks
-│   │   ├── utils/           # Helper functions
-│   │   ├── types/           # TypeScript types
-│   │   └── api/             # API client functions
-│   └── public/              # Static assets
+│   │   ├── components/       # Reusable React components
+│   │   ├── pages/            # Page components (ComplaintForm, AdminLogin, etc.)
+│   │   ├── contexts/         # React contexts (AuthContext)
+│   │   ├── utils/            # API client and utilities
+│   │   ├── types/            # TypeScript interfaces
+│   │   └── hooks/            # Custom React hooks
+│   ├── .env                  # Frontend environment variables
+│   └── package.json          # Dependencies and scripts
+├── test-database.js          # Database testing script
+├── create-admin-user.js      # Admin user creation script
 └── README.md
 ```
 
-## 🛠️ Installation
+## 🗄️ Database Schema
+
+### Tables Overview
+```sql
+-- Main complaints table
+complaints (id, name, email, complaint, complaint_html, status, created_at, updated_at, resolved_at, client_ip, user_agent, attachments)
+
+-- Admin users table
+admin_users (id, email, password_hash, name, role, is_active, created_at, last_login)
+
+-- Comments system
+complaint_comments (id, complaint_id, author_id, author_name, comment_text, comment_html, is_internal, created_at, updated_at)
+```
+
+## 🛠️ Installation & Setup
 
 ### Prerequisites
 - Node.js (>=16.0.0)
 - npm or yarn
-- Supabase account
+- Supabase account with database setup
 
-### 1. Clone the repository
+### 1. Clone and Install
 ```bash
 git clone <repository-url>
 cd complaint-hub-pro
+
+# Install backend dependencies
+cd backend && npm install
+
+# Install frontend dependencies
+cd ../frontend && npm install
 ```
 
-### 2. Install backend dependencies
-```bash
-cd backend
-npm install
-```
+### 2. Environment Configuration
 
-### 3. Install frontend dependencies
-```bash
-cd frontend
-npm install
-```
-
-### 4. Set up environment variables
-
-#### Backend (.env)
-```bash
-cp backend/.env.example backend/.env
-```
-Edit `backend/.env` with your configuration:
+#### Backend Environment (.env)
 ```env
 NODE_ENV=development
 PORT=3001
-SUPABASE_URL=your-supabase-project-url
+JWT_SECRET=your-super-secret-jwt-key-min-256-bits-long
+SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_KEY=your-supabase-service-role-key
-JWT_SECRET=your-super-secret-jwt-key-min-256-bits-long
-ALLOWED_ORIGINS=http://localhost:3000
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
 
-#### Frontend (.env)
-```bash
-cp frontend/.env.example frontend/.env
-```
-Edit `frontend/.env` with your configuration:
+#### Frontend Environment (.env)
 ```env
-VITE_API_BASE_URL=http://localhost:3001/api
-VITE_SUPABASE_URL=your-supabase-project-url
-VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_API_URL=http://localhost:3001/api
 ```
 
-### 5. Set up Supabase database
+### 3. Database Setup
 
-The database schema is already created in your Supabase instance with the following tables:
-- `complaints`: Main complaint data
-- `admin_users`: Admin user accounts
-- `complaint_comments`: Comments and responses
+The system uses your existing Supabase database with the following tables:
+- `complaints` - Main complaint storage
+- `admin_users` - Admin authentication
+- `complaint_comments` - Comment system
+
+### 4. Create Admin User
+```bash
+node create-admin-user.js
+```
+This creates a demo admin user:
+- **Email**: admin@demo.com
+- **Password**: admin123
 
 ## 🚀 Running the Application
 
 ### Development Mode
 
-1. **Start the backend server:**
+1. **Start Backend Server:**
 ```bash
 cd backend
-npm run dev
+npm run build  # Build TypeScript
+npm run dev     # Start with nodemon (or npm start for production)
 ```
-The backend will run on http://localhost:3001
+Backend runs on: http://localhost:3001
 
-2. **Start the frontend development server:**
+2. **Start Frontend Server:**
 ```bash
 cd frontend
 npm run dev
 ```
-The frontend will run on http://localhost:3000
+Frontend runs on: http://localhost:5173
 
-### Production Mode
+### Health Check
+Visit http://localhost:3001/health to verify backend is running.
 
-1. **Build the backend:**
-```bash
-cd backend
-npm run build
-```
-
-2. **Build the frontend:**
-```bash
-cd frontend
-npm run build
-```
-
-3. **Start the production server:**
-```bash
-cd backend
-npm start
-```
-
-## 📝 API Endpoints
+## 📝 API Documentation
 
 ### Public Endpoints
-- `POST /api/complaints` - Submit a new complaint
-- `GET /api/complaints/:id` - Get complaint by ID (public view)
+
+#### Submit Complaint
+```http
+POST /api/complaints
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com", 
+  "complaint": "Detailed complaint text with **markdown** support"
+}
+
+Response: {
+  "success": true,
+  "message": "Complaint submitted successfully",
+  "data": {
+    "id": "uuid-string",
+    "trackingId": "A3703311"
+  }
+}
+```
+
+#### Health Check
+```http
+GET /health
+
+Response: {
+  "success": true,
+  "message": "Server is healthy",
+  "timestamp": "2025-09-12T16:47:23.468Z"
+}
+```
 
 ### Admin Endpoints (Authentication Required)
-- `POST /api/auth/login` - Admin login
-- `GET /api/complaints` - Get all complaints (paginated)
-- `PATCH /api/complaints/:id` - Update complaint status
-- `DELETE /api/complaints/:id` - Delete complaint
-- `POST /api/complaints/:id/comments` - Add comment to complaint
-- `GET /api/complaints/:id/comments` - Get complaint comments
 
-## 🔒 Security
+#### Admin Login
+```http
+POST /api/auth/login
+Content-Type: application/json
 
-This application implements comprehensive security measures:
+{
+  "email": "admin@demo.com",
+  "password": "admin123"
+}
 
-- **Rate Limiting**: 100 requests per 15 minutes, 5 complaint submissions per hour
-- **Input Validation**: All inputs validated and sanitized
-- **Authentication**: JWT tokens with expiration
-- **File Upload Security**: Type validation, size limits, secure storage
-- **CORS**: Configured for specific origins
-- **Security Headers**: Implemented via Helmet.js
-- **SQL Injection Prevention**: Parameterized queries
-- **XSS Prevention**: HTML sanitization
+Response: {
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "jwt-token-string",
+    "user": {
+      "id": "user-id",
+      "email": "admin@demo.com",
+      "name": "Demo Admin",
+      "role": "admin"
+    }
+  }
+}
+```
+
+#### Get User Profile
+```http
+GET /api/auth/me
+Authorization: Bearer <jwt-token>
+
+Response: {
+  "success": true,
+  "data": {
+    "id": "user-id",
+    "email": "admin@demo.com", 
+    "name": "Demo Admin",
+    "role": "admin",
+    "created_at": "timestamp",
+    "last_login": "timestamp"
+  }
+}
+```
+
+#### List All Complaints
+```http
+GET /api/complaints?page=1&limit=10&status=Pending
+Authorization: Bearer <jwt-token>
+
+Response: {
+  "success": true,
+  "data": {
+    "complaints": [...],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 25,
+      "pages": 3
+    }
+  }
+}
+```
+
+#### Get Complaint Details
+```http
+GET /api/complaints/:id
+Authorization: Bearer <jwt-token>
+
+Response: {
+  "success": true,
+  "data": {
+    "id": "complaint-id",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "complaint": "Original complaint text",
+    "complaint_html": "<p>Rendered HTML</p>",
+    "status": "Pending",
+    "created_at": "timestamp",
+    "complaint_comments": [...]
+  }
+}
+```
+
+#### Update Complaint Status
+```http
+PATCH /api/complaints/:id
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+
+{
+  "status": "Resolved"
+}
+
+Response: {
+  "success": true,
+  "message": "Complaint updated successfully",
+  "data": { ...updated complaint }
+}
+```
+
+#### Add Comment
+```http
+POST /api/complaints/:id/comments
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+
+{
+  "comment_text": "This is a **markdown** comment",
+  "is_internal": false
+}
+
+Response: {
+  "success": true,
+  "message": "Comment created successfully", 
+  "data": { ...comment with author info }
+}
+```
+
+#### Get Comments
+```http
+GET /api/complaints/:id/comments
+Authorization: Bearer <jwt-token>
+
+Response: {
+  "success": true,
+  "data": [
+    {
+      "id": "comment-id",
+      "comment_text": "Comment text",
+      "comment_html": "<p>Rendered HTML</p>",
+      "author_name": "Demo Admin",
+      "is_internal": false,
+      "created_at": "timestamp"
+    }
+  ]
+}
+```
+
+#### Delete Complaint (Admin Only)
+```http
+DELETE /api/complaints/:id
+Authorization: Bearer <jwt-token>
+
+Response: {
+  "success": true,
+  "message": "Complaint deleted successfully"
+}
+```
+
+## 🔒 Security Features
+
+### Authentication & Authorization
+- **JWT Tokens**: 24-hour expiration, secure signing
+- **Role-based Access**: Admin and agent roles with different permissions
+- **Password Security**: bcrypt hashing with salt rounds = 12
+- **Token Validation**: Middleware checks token validity and user status
+
+### Input Validation & Sanitization
+- **Server-side Validation**: express-validator for all inputs
+- **HTML Sanitization**: DOMPurify prevents XSS attacks
+- **Markdown Processing**: Safe markdown rendering with marked.js
+- **Request Size Limits**: 10MB limit for JSON requests
+
+### API Security
+- **Rate Limiting**: 100 requests per 15 minutes per IP
+- **CORS Protection**: Configured origins for cross-origin requests
+- **Security Headers**: Helmet.js provides comprehensive headers
+- **Error Handling**: Secure error responses without sensitive data leaks
+
+## 🎯 Usage Guide
+
+### For End Users
+1. Visit the public form at http://localhost:5173
+2. Fill out complaint details with name, email, and complaint text
+3. Use markdown formatting for rich text (bold, italic, lists, etc.)
+4. Submit and receive a tracking ID for follow-up
+
+### For Administrators
+1. Access admin panel at http://localhost:5173/admin/login
+2. Login with credentials (admin@demo.com / admin123)
+3. View dashboard with all complaints and pagination
+4. Click "View Details" to see full complaint with comments
+5. Toggle status between Pending/Resolved
+6. Add comments (public or internal) to complaints
+7. Delete complaints (admin role only)
 
 ## 🧪 Testing
 
-### Backend Testing
+### Manual Testing
 ```bash
-cd backend
-npm test
+# Test backend health
+curl http://localhost:3001/health
+
+# Test complaint submission  
+curl -X POST http://localhost:3001/api/complaints \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test User","email":"test@example.com","complaint":"Test complaint"}'
+
+# Test admin login
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@demo.com","password":"admin123"}'
 ```
 
-### Frontend Testing
+### Database Testing
 ```bash
-cd frontend
-npm test
+node test-database.js
+```
+This script tests all database operations including creating complaints, comments, and admin users.
+
+## 🚀 Production Deployment
+
+### Build Process
+```bash
+# Build backend
+cd backend && npm run build
+
+# Build frontend  
+cd frontend && npm run build
 ```
 
-## 📦 Deployment
-
-### Environment Configuration
-Update environment variables for production:
-
-#### Backend
-- Set `NODE_ENV=production`
+### Environment Variables
+- Set `NODE_ENV=production` for backend
 - Configure production Supabase credentials
-- Set strong `JWT_SECRET`
-- Configure production `ALLOWED_ORIGINS`
-
-#### Frontend
-- Update `VITE_API_BASE_URL` to production API URL
-- Configure production Supabase credentials
+- Set strong `JWT_SECRET` (minimum 256 bits)
+- Update `ALLOWED_ORIGINS` for production domains
 
 ### Production Checklist
-- [ ] Environment variables configured
-- [ ] HTTPS enabled
-- [ ] Database backups automated
-- [ ] Error logging configured
-- [ ] Performance monitoring setup
-- [ ] Security headers validated
-- [ ] File upload security tested
-- [ ] Rate limiting configured
-- [ ] Admin accounts created with strong passwords
+- [ ] Environment variables configured securely
+- [ ] HTTPS enabled with valid certificates  
+- [ ] Database connection secured
+- [ ] Admin users created with strong passwords
+- [ ] Rate limiting properly configured
+- [ ] Error logging and monitoring setup
+- [ ] File upload security validated
+- [ ] Security headers tested
+- [ ] CORS configuration verified
 
-## 📄 License
+## 📦 Key Dependencies
 
-This project is licensed under the MIT License.
+### Backend
+- **express** - Web framework
+- **typescript** - Type safety
+- **@supabase/supabase-js** - Database client
+- **jsonwebtoken** - JWT authentication
+- **bcryptjs** - Password hashing
+- **express-validator** - Input validation
+- **helmet** - Security headers
+- **cors** - Cross-origin requests
+- **express-rate-limit** - API rate limiting
+- **marked** - Markdown processing
+- **dompurify** - HTML sanitization
+
+### Frontend
+- **react** - UI framework
+- **typescript** - Type safety
+- **vite** - Build tool
+- **tailwindcss** - Styling
+- **@tanstack/react-query** - Data fetching/caching
+- **react-hook-form** - Form handling
+- **@hookform/resolvers** - Form validation
+- **zod** - Schema validation
+- **react-router-dom** - Routing
+- **@uiw/react-md-editor** - Markdown editor
+- **axios** - HTTP client
+- **react-hot-toast** - Notifications
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes following the existing code style
+4. Add tests for new functionality
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 📞 Support
 
-For support, please create an issue in the repository or contact the development team.
+For questions, issues, or contributions:
+- Create an issue in the GitHub repository
+- Review the API documentation above
+- Check the database schema and test files for examples
+
+---
+
+**System Status**: ✅ Production Ready  
+**Latest Update**: Complete modular implementation with full frontend/backend integration
