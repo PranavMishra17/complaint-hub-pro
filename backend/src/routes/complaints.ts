@@ -31,10 +31,7 @@ router.post('/',
 );
 
 // GET /api/complaints/public/:trackingId
-router.get('/public/:trackingId', (req, res, next) => {
-  console.log('🚦 Route matched: /public/:trackingId with trackingId:', req.params.trackingId);
-  next();
-}, getComplaintByTrackingId);
+router.get('/public/:trackingId', getComplaintByTrackingId);
 
 // PATCH /api/complaints/public/:trackingId/withdraw
 router.patch('/public/:trackingId/withdraw', withdrawComplaint);

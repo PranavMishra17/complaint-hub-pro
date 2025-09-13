@@ -27,10 +27,12 @@ const ComplaintDetails: React.FC = () => {
   const [commentText, setCommentText] = useState('');
   const [showCommentForm, setShowCommentForm] = useState(false);
   
-  // Determine if this is public or admin view
-  const isPublicView = location.pathname.includes('/complaint/') && !location.pathname.includes('/admin');
-  const isAdminView = user && (user.role === 'admin' || user.role === 'agent');
+  // Determine if this is public or admin view based on URL structure
+  const isAdminRoute = location.pathname.startsWith('/admin/');
+  const isPublicView = !isAdminRoute;
+  const isAdminView = isAdminRoute && user && (user.role === 'admin' || user.role === 'agent');
   const complaintIdentifier = trackingId || id;
+
 
   const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<CommentFormData>({
     resolver: zodResolver(commentSchema),
@@ -148,10 +150,10 @@ const ComplaintDetails: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Complaint Not Found</h2>
           <p className="text-gray-600 mb-4">The complaint you're looking for doesn't exist or has been removed.</p>
           <button
-            onClick={() => isPublicView ? navigate('/') : navigate('/admin/dashboard')}
+            onClick={() => isAdminRoute ? navigate('/admin/dashboard') : navigate('/')}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
-            {isPublicView ? 'Back to Home' : 'Back to Dashboard'}
+            {isAdminRoute ? 'Back to Dashboard' : 'Back to Home'}
           </button>
         </div>
       </div>
@@ -166,10 +168,10 @@ const ComplaintDetails: React.FC = () => {
           <div className="flex justify-between items-center py-6">
             <div>
               <button
-                onClick={() => isPublicView ? navigate('/') : navigate('/admin/dashboard')}
+                onClick={() => isAdminRoute ? navigate('/admin/dashboard') : navigate('/')}
                 className="text-blue-600 hover:text-blue-800 mb-2"
               >
-                ← {isPublicView ? 'Back to Home' : 'Back to Dashboard'}
+                ← {isAdminRoute ? 'Back to Dashboard' : 'Back to Home'}
               </button>
               <h1 className="text-3xl font-bold text-gray-900">
                 Complaint Details

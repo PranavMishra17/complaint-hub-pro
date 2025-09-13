@@ -184,7 +184,6 @@ export const updateComplaint = async (req: AuthenticatedRequest, res: Response):
 export const getComplaintByTrackingId = async (req: Request, res: Response): Promise<void> => {
   try {
     const { trackingId } = req.params;
-    console.log('🔍 getComplaintByTrackingId called with:', trackingId);
 
     if (!trackingId) {
       res.status(400).json({

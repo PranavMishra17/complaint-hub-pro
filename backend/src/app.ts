@@ -73,7 +73,6 @@ app.use((req, res, next) => {
     next();
   }
 });
-console.log('🚨 CORS COMPLETELY DISABLED - NO RESTRICTIONS');
 
 // Rate limiting
 const limiter = rateLimit({
@@ -106,17 +105,6 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// Request logging middleware
-app.use('/api', (req, _res, next) => {
-  console.log('📝 API Request:', {
-    method: req.method,
-    url: req.url,
-    origin: req.headers.origin,
-    userAgent: req.headers['user-agent']?.substring(0, 50),
-    timestamp: new Date().toISOString()
-  });
-  next();
-});
 
 // API routes
 app.use('/api/auth', authRouter);
@@ -129,11 +117,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3001;
 
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Health check available at http://localhost:${PORT}/health`);
-    console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
+  app.listen(PORT);
 }
 
 export default app;

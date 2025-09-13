@@ -27,19 +27,11 @@ const AdminLogin: React.FC = () => {
   }
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log('🔐 Starting admin login:', {
-      email: data.email,
-      timestamp: new Date().toISOString()
-    });
-
     setIsSubmitting(true);
     try {
-      console.log('📤 Calling login function');
       await login(data.email, data.password);
-      console.log('✅ Login successful, navigating to dashboard');
       navigate('/admin/dashboard');
     } catch (error) {
-      console.error('❌ Login error:', error);
       // Error handling is done in the AuthContext
     } finally {
       setIsSubmitting(false);

@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": null,
+  "functions": {
+    "dist/app.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "dist/app.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "JWT_SECRET": "@jwt_secret",
+    "SUPABASE_URL": "@supabase_url",
+    "SUPABASE_ANON_KEY": "@supabase_anon_key", 
+    "SUPABASE_SERVICE_KEY": "@supabase_service_key"
+  }
+}

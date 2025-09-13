@@ -9,57 +9,27 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor to add auth token and logging
+// Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    console.log('🚀 Frontend API Request:', {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`,
-      headers: config.headers,
-      timestamp: new Date().toISOString()
-    });
-
     const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔑 Adding auth token to request');
     }
     return config;
   },
   (error) => {
-    console.error('❌ Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor to handle errors and logging
+// Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => {
-    console.log('✅ Frontend API Response:', {
-      status: response.status,
-      statusText: response.statusText,
-      url: response.config.url,
-      method: response.config.method?.toUpperCase(),
-      timestamp: new Date().toISOString()
-    });
     return response;
   },
   (error) => {
-    console.error('❌ Frontend API Error:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      method: error.config?.method?.toUpperCase(),
-      responseData: error.response?.data,
-      timestamp: new Date().toISOString()
-    });
-
     if (error.response?.status === 401) {
-      console.log('🔐 Unauthorized - token may be expired');
-      
       // Check if this is an auth-related endpoint or token validation failure
       const isAuthEndpoint = error.config?.url?.includes('/auth/');
       const errorMessage = error.response?.data?.error || '';
@@ -67,15 +37,12 @@ api.interceptors.response.use(
       
       // Only auto-redirect for auth endpoint failures or clear token issues
       if (isAuthEndpoint || isTokenRelatedError) {
-        console.log('🚪 Redirecting to login due to authentication failure');
         localStorage.removeItem('auth_token');
         
         // Only redirect if we're on an admin page to avoid interfering with public pages
         if (window.location.pathname.startsWith('/admin/') && !window.location.pathname.includes('/login')) {
           window.location.href = '/admin/login';
         }
-      } else {
-        console.log('🤔 401 error but not redirecting - may be a permission issue');
       }
     }
     return Promise.reject(error);
