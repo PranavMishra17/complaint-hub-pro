@@ -137,22 +137,6 @@ Access:
 - **Backend API**: http://localhost:3001/api
 - **Admin Login**: Use demo credentials above
 
-## 🌐 Deployment
-
-### Quick Deploy to Vercel
-1. Push code to GitHub
-2. Connect repo to Vercel (frontend & backend as separate projects)
-3. Set environment variables
-4. Deploy with one click
-
-Detailed guide: [`DEPLOYMENT.md`](DEPLOYMENT.md)
-
-### GitHub Actions
-Automatic deployment on every push to main branch. Configure secrets in GitHub repository settings.
-
-### Production URLs
-- Frontend: `https://your-app.vercel.app`
-- Backend API: `https://your-api.vercel.app/api`
 
 ## 🔌 Backend API Endpoints
 
