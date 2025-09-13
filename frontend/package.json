@@ -19,7 +19,7 @@
     "react",
     "typescript"
   ],
-  "author": "",
+  "author": "Pranav Mishra",
   "license": "MIT",
   "dependencies": {
     "@heroicons/react": "^2.2.0",
