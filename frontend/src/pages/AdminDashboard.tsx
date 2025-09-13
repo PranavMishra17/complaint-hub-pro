@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 interface SortConfig {
-  key: keyof Complaint | 'created_at' | 'name' | 'status' | 'complaint_type';
+  key: keyof Complaint | 'created_at' | 'name' | 'status';
   direction: 'asc' | 'desc';
 }
 
@@ -87,8 +87,7 @@ const AdminDashboard: React.FC = () => {
         complaint.name.toLowerCase().includes(searchLower) ||
         complaint.email.toLowerCase().includes(searchLower) ||
         complaint.complaint.toLowerCase().includes(searchLower) ||
-        complaint.status.toLowerCase().includes(searchLower) ||
-        (complaint.complaint_type && complaint.complaint_type.toLowerCase().includes(searchLower))
+        complaint.status.toLowerCase().includes(searchLower)
       );
     });
     
@@ -96,13 +95,11 @@ const AdminDashboard: React.FC = () => {
     return [...filtered].sort((a, b) => {
       const aValue = sortConfig.key === 'name' ? a.name : 
                     sortConfig.key === 'status' ? a.status :
-                    sortConfig.key === 'complaint_type' ? a.complaint_type :
                     sortConfig.key === 'created_at' ? a.created_at :
                     a[sortConfig.key as keyof Complaint];
       
       const bValue = sortConfig.key === 'name' ? b.name : 
                     sortConfig.key === 'status' ? b.status :
-                    sortConfig.key === 'complaint_type' ? b.complaint_type :
                     sortConfig.key === 'created_at' ? b.created_at :
                     b[sortConfig.key as keyof Complaint];
       
@@ -309,16 +306,6 @@ const AdminDashboard: React.FC = () => {
                 Status {getSortIcon('status')}
               </button>
 
-              <button
-                onClick={() => handleSort('complaint_type')}
-                className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  sortConfig.key === 'complaint_type'
-                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                    : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
-                }`}
-              >
-                Type {getSortIcon('complaint_type')}
-              </button>
             </div>
 
             {/* Results Count */}
@@ -365,18 +352,6 @@ const AdminDashboard: React.FC = () => {
                             )}
                             {complaint.status}
                           </span>
-                          {complaint.complaint_type && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                              {complaint.complaint_type === 'Technical' && '🔧'}
-                              {complaint.complaint_type === 'Billing' && '💳'}
-                              {complaint.complaint_type === 'Service' && '🛠️'}
-                              {complaint.complaint_type === 'General' && '📝'}
-                              {complaint.complaint_type === 'Product' && '📦'}
-                              {complaint.complaint_type === 'Account' && '👤'}
-                              {complaint.complaint_type === 'Other' && '📋'}
-                              <span className="ml-1">{complaint.complaint_type}</span>
-                            </span>
-                          )}
                         </div>
                       </div>
                       

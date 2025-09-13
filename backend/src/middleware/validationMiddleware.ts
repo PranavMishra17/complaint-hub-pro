@@ -25,7 +25,11 @@ export const validateComplaint = [
   body('complaint')
     .trim()
     .isLength({ min: 10, max: 10000 })
-    .withMessage('Complaint must be between 10 and 10000 characters')
+    .withMessage('Complaint must be between 10 and 10000 characters'),
+  body('complaint_type')
+    .optional()
+    .isIn(['Technical', 'Billing', 'Service', 'General', 'Product', 'Account', 'Other'])
+    .withMessage('Invalid complaint type')
 ];
 
 export const validateLogin = [

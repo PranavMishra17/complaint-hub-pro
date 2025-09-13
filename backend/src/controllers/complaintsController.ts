@@ -5,18 +5,17 @@ import { AuthenticatedRequest, CreateComplaintRequest, UpdateComplaintRequest, P
 
 export const createComplaint = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, complaint, complaint_type }: CreateComplaintRequest = req.body;
+    const { name, email, complaint }: CreateComplaintRequest = req.body;
     
     const complaintHtml = await processMarkdown(complaint);
     
-    const { data, error } = await supabase
+    const { data: complaintData, error } = await supabase
       .from('complaints')
       .insert([{
         name,
         email,
         complaint,
         complaint_html: complaintHtml,
-        complaint_type: complaint_type || 'General',
         status: 'Pending',
         client_ip: req.ip,
         user_agent: req.get('User-Agent') || ''
@@ -33,12 +32,13 @@ export const createComplaint = async (req: Request, res: Response): Promise<void
       return;
     }
 
+
     res.status(201).json({
       success: true,
       message: 'Complaint submitted successfully',
       data: {
-        id: data.id,
-        trackingId: data.id.split('-')[0].toUpperCase()
+        id: complaintData.id,
+        trackingId: complaintData.id.split('-')[0].toUpperCase()
       }
     });
   } catch (error) {
@@ -123,6 +123,7 @@ export const getComplaintById = async (req: AuthenticatedRequest, res: Response)
       });
       return;
     }
+
 
     res.json({
       success: true,
@@ -234,6 +235,7 @@ export const getComplaintByTrackingId = async (req: Request, res: Response): Pro
         (comment: any) => !comment.is_internal
       );
     }
+
 
     res.json({
       success: true,

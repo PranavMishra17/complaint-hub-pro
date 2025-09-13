@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Pages
 import LandingPage from './pages/LandingPage';
 import ComplaintForm from './pages/ComplaintForm';
+import ComplaintTracker from './pages/ComplaintTracker';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import ComplaintDetails from './pages/ComplaintDetails';
@@ -36,6 +37,7 @@ function App() {
               {/* Public Routes */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/complaint/submit" element={<ComplaintForm />} />
+              <Route path="/complaint/track" element={<ComplaintTracker />} />
               <Route path="/complaint/:trackingId" element={<ComplaintDetails />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               

@@ -68,19 +68,20 @@ const ComplaintDetails: React.FC = () => {
     }
   });
   
-  const withdrawComplaintMutation = useMutation({
+  const deleteComplaintMutation = useMutation({
     mutationFn: async () => {
-      if (!trackingId) throw new Error('Tracking ID is required');
-      return complaintsApi.withdrawComplaint(trackingId);
+      if (!id) throw new Error('Complaint ID is required');
+      return complaintsApi.deleteComplaint(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['complaint', complaintIdentifier] });
-      toast.success('Complaint withdrawn successfully!');
+      toast.success('Complaint deleted successfully!');
+      navigate('/admin/dashboard');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to withdraw complaint');
+      toast.error(error.response?.data?.error || 'Failed to delete complaint');
     }
   });
+
 
   const createCommentMutation = useMutation({
     mutationFn: async (data: CreateCommentRequest) => {
@@ -105,11 +106,12 @@ const ComplaintDetails: React.FC = () => {
     updateStatusMutation.mutate(newStatus);
   };
   
-  const handleWithdraw = () => {
-    if (window.confirm('Are you sure you want to withdraw this complaint? This action cannot be undone.')) {
-      withdrawComplaintMutation.mutate();
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this complaint? This action cannot be undone.')) {
+      deleteComplaintMutation.mutate();
     }
   };
+
 
   const onSubmitComment = (data: CommentFormData) => {
     createCommentMutation.mutate({
@@ -119,9 +121,16 @@ const ComplaintDetails: React.FC = () => {
   };
 
   const getStatusColor = (status: string) => {
-    return status === 'Pending' 
-      ? 'bg-yellow-100 text-yellow-800 border-yellow-200' 
-      : 'bg-green-100 text-green-800 border-green-200';
+    switch (status) {
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'Resolved':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'Withdrawn':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
   };
 
   if (isLoading) {
@@ -183,13 +192,16 @@ const ComplaintDetails: React.FC = () => {
                   Mark as {complaint.status === 'Pending' ? 'Resolved' : 'Pending'}
                 </button>
               )}
-              {isPublicView && complaint.status === 'Pending' && (
+              {isAdminView && user?.role === 'admin' && (
                 <button
-                  onClick={handleWithdraw}
-                  disabled={withdrawComplaintMutation.isPending}
-                  className="px-4 py-2 rounded-md font-medium text-sm bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  onClick={handleDelete}
+                  disabled={deleteComplaintMutation.isPending}
+                  className="inline-flex items-center px-4 py-2 rounded-md font-medium text-sm bg-red-600 text-white hover:bg-red-700 transition-colors"
                 >
-                  {withdrawComplaintMutation.isPending ? 'Withdrawing...' : 'Withdraw Complaint'}
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  {deleteComplaintMutation.isPending ? 'Deleting...' : 'Delete Complaint'}
                 </button>
               )}
             </div>
@@ -201,7 +213,8 @@ const ComplaintDetails: React.FC = () => {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Complaint Details */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Basic Information */}
             <div className="bg-white shadow rounded-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-xl font-semibold text-gray-900">Complaint Information</h2>
@@ -237,15 +250,42 @@ const ComplaintDetails: React.FC = () => {
                     </p>
                   </div>
                 )}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">Complaint Details</h3>
-                  <div className="prose prose-sm max-w-none">
-                    {complaint.complaint_html ? (
-                      <div dangerouslySetInnerHTML={{ __html: complaint.complaint_html }} />
-                    ) : (
-                      <p className="whitespace-pre-wrap">{complaint.complaint}</p>
-                    )}
+              </div>
+            </div>
+
+            {/* Withdrawn Notice */}
+            {isPublicView && complaint.status === 'Withdrawn' && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
                   </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-yellow-800">
+                      Complaint Withdrawn
+                    </h3>
+                    <p className="mt-2 text-sm text-yellow-700">
+                      This complaint has been withdrawn and is no longer active.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Complaint Message */}
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900">Complaint Message</h2>
+              </div>
+              <div className="px-6 py-6">
+                <div className="prose prose-sm max-w-none">
+                  {complaint.complaint_html ? (
+                    <div dangerouslySetInnerHTML={{ __html: complaint.complaint_html }} />
+                  ) : (
+                    <div className="whitespace-pre-wrap text-gray-900 leading-relaxed">{complaint.complaint}</div>
+                  )}
                 </div>
               </div>
             </div>

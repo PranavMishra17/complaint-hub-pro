@@ -1,31 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import MDEditor from '@uiw/react-md-editor';
 import { complaintsApi } from '../utils/api';
 import toast from 'react-hot-toast';
-import type { CreateComplaintRequest, ComplaintType } from '../types';
+import type { CreateComplaintRequest } from '../types';
 import '../styles/md-editor-custom.css';
 
 const complaintSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name is too long'),
   email: z.string().email('Invalid email address'),
-  complaint: z.string().min(10, 'Complaint must be at least 10 characters').max(10000, 'Complaint is too long'),
-  complaint_type: z.enum(['Technical', 'Billing', 'Service', 'General', 'Product', 'Account', 'Other'])
+  complaint: z.string().min(10, 'Complaint must be at least 10 characters').max(10000, 'Complaint is too long')
 });
 
 type ComplaintFormData = z.infer<typeof complaintSchema>;
 
-const COMPLAINT_TYPES: { value: ComplaintType; label: string; description: string; icon: string }[] = [
-  { value: 'Technical', label: 'Technical Issue', description: 'Software bugs, website errors, technical problems', icon: '🔧' },
-  { value: 'Billing', label: 'Billing & Payments', description: 'Payment issues, billing disputes, refunds', icon: '💳' },
-  { value: 'Service', label: 'Customer Service', description: 'Service quality, support experience, staff behavior', icon: '🤝' },
-  { value: 'Product', label: 'Product Issue', description: 'Product defects, quality concerns, functionality', icon: '📦' },
-  { value: 'Account', label: 'Account & Security', description: 'Login issues, account access, security concerns', icon: '🔐' },
-  { value: 'General', label: 'General Inquiry', description: 'General questions, feedback, suggestions', icon: '💬' },
-  { value: 'Other', label: 'Other', description: 'Issues not covered by other categories', icon: '📋' }
-];
 
 const ComplaintForm: React.FC = () => {
   const [complaint, setComplaint] = useState('');
@@ -34,53 +24,41 @@ const ComplaintForm: React.FC = () => {
   const [trackingId, setTrackingId] = useState('');
   const [editorMode, setEditorMode] = useState<'edit' | 'preview' | 'live'>('live');
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<ComplaintFormData>({
-    resolver: zodResolver(complaintSchema),
-    defaultValues: {
-      complaint_type: 'General'
-    }
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<ComplaintFormData>({
+    resolver: zodResolver(complaintSchema)
   });
 
-  const selectedType = watch('complaint_type');
+
+
 
   const onSubmit = async (data: ComplaintFormData) => {
-    console.log('📝 Starting complaint submission:', {
-      name: data.name,
-      email: data.email,
-      complaintLength: complaint.length,
-      timestamp: new Date().toISOString()
-    });
 
     setIsSubmitting(true);
+
     try {
       const submitData: CreateComplaintRequest = {
         name: data.name,
         email: data.email,
-        complaint: complaint,
-        complaint_type: data.complaint_type
+        complaint: complaint
       };
 
-      console.log('📤 Sending complaint data:', submitData);
       const response = await complaintsApi.createComplaint(submitData);
-      console.log('📥 Received response:', response);
+      
       
       if (response.data.success) {
-        console.log('✅ Complaint submitted successfully:', response.data.data);
         setTrackingId(response.data.data.trackingId);
         setSubmitted(true);
-        toast.success('Complaint submitted successfully!');
+        toast.success(
+          `Complaint submitted successfully! ${
+            response.data.data.attachments > 0 
+              ? `${response.data.data.attachments} file(s) uploaded.` 
+              : ''
+          }`
+        );
       } else {
-        console.error('❌ Server returned error:', response.data);
         throw new Error(response.data.error || 'Failed to submit complaint');
       }
     } catch (error: any) {
-      console.error('❌ Submission error details:', {
-        message: error.message,
-        response: error.response,
-        status: error.response?.status,
-        data: error.response?.data,
-        config: error.config
-      });
       const errorMessage = error.response?.data?.error || 'Failed to submit complaint. Please try again.';
       toast.error(errorMessage);
     } finally {
@@ -187,48 +165,6 @@ const ComplaintForm: React.FC = () => {
                 </div>
               </div>
 
-              {/* Complaint Type Section */}
-              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
-                  Complaint Category
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {COMPLAINT_TYPES.map((type) => (
-                    <label key={type.value} className="relative">
-                      <input
-                        {...register('complaint_type')}
-                        type="radio"
-                        value={type.value}
-                        className="sr-only peer"
-                      />
-                      <div className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                        selectedType === type.value
-                          ? 'border-blue-500 bg-blue-50 shadow-md'
-                          : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
-                      }`}>
-                        <div className="flex items-start space-x-3">
-                          <span className="text-2xl">{type.icon}</span>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-gray-900 text-sm">{type.label}</h4>
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{type.description}</p>
-                          </div>
-                        </div>
-                        {selectedType === type.value && (
-                          <div className="absolute top-2 right-2">
-                            <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-                {errors.complaint_type && <p className="text-red-500 text-sm mt-2">{errors.complaint_type.message}</p>}
-              </div>
 
               {/* Enhanced Complaint Details Section */}
               <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
@@ -319,6 +255,7 @@ const ComplaintForm: React.FC = () => {
                 </div>
                 {errors.complaint && <p className="text-red-500 text-sm mt-2">{errors.complaint.message}</p>}
               </div>
+
 
               {/* Submit Section */}
               <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">

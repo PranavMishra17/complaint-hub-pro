@@ -24,7 +24,11 @@ const router = express.Router();
 
 // Public routes
 // POST /api/complaints
-router.post('/', validateComplaint, handleValidationErrors, createComplaint);
+router.post('/', 
+  validateComplaint, 
+  handleValidationErrors, 
+  createComplaint
+);
 
 // GET /api/complaints/public/:trackingId
 router.get('/public/:trackingId', (req, res, next) => {

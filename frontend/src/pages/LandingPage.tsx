@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { UserIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { UserIcon, ShieldCheckIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 const LandingPage: React.FC = () => {
   return (
@@ -28,13 +28,22 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {/* User Button */}
+            {/* Submit Button */}
             <Link
               to="/complaint/submit"
               className="w-full flex items-center justify-center px-6 py-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             >
               <UserIcon className="h-6 w-6 mr-3" />
               Submit a Complaint
+            </Link>
+
+            {/* Track Button */}
+            <Link
+              to="/complaint/track"
+              className="w-full flex items-center justify-center px-6 py-4 border border-blue-300 rounded-lg shadow-sm text-base font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            >
+              <MagnifyingGlassIcon className="h-6 w-6 mr-3" />
+              Track Your Complaint
             </Link>
 
             {/* Admin Button */}
@@ -50,10 +59,13 @@ const LandingPage: React.FC = () => {
           <div className="mt-8 text-center">
             <div className="text-sm text-gray-500">
               <p className="mb-2">
-                <strong>For Users:</strong> Submit complaints and track their progress
+                <strong>Submit:</strong> File a new complaint
+              </p>
+              <p className="mb-2">
+                <strong>Track:</strong> Check status with your tracking ID
               </p>
               <p>
-                <strong>For Admins:</strong> Manage and respond to complaints
+                <strong>Admin:</strong> Manage and respond to complaints
               </p>
             </div>
           </div>

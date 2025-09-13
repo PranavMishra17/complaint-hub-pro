@@ -1,4 +1,14 @@
-export type ComplaintType = 'Technical' | 'Billing' | 'Service' | 'General' | 'Product' | 'Account' | 'Other';
+export interface FileAttachment {
+  id: string;
+  complaint_id: string;
+  file_name: string;
+  original_name: string;
+  file_size: number;
+  mime_type: string;
+  file_path: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface Complaint {
   id: string;
@@ -6,9 +16,8 @@ export interface Complaint {
   email: string;
   complaint: string;
   complaint_html?: string;
-  complaint_type: ComplaintType;
   status: 'Pending' | 'Resolved';
-  attachments?: any[];
+  file_attachments?: FileAttachment[];
   created_at: string;
   updated_at: string;
   resolved_at?: string;
@@ -43,8 +52,8 @@ export interface CreateComplaintRequest {
   name: string;
   email: string;
   complaint: string;
-  complaint_type: ComplaintType;
 }
+
 
 export interface UpdateComplaintRequest {
   status?: 'Pending' | 'Resolved';
