@@ -208,27 +208,22 @@ Validation rules: [`backend/src/middleware/validationMiddleware.ts`](backend/src
 ## 📱 Demo Screenshots
 
 ### Public Interface
-![Landing Page](pics/landing-page.png)
+![Landing Page](pics/1.png)
 *Main landing page with options to submit complaint, track existing complaints, or access admin panel*
 
-![Complaint Form](pics/complaint-form.png)  
+![Complaint Form](pics/2.png)  
 *Rich complaint submission form with markdown support and real-time validation*
 
-![Complaint Tracker](pics/complaint-tracker.png)
+![Complaint Tracker](pics/3.png)
 *Public complaint tracking interface using 8-character tracking ID*
 
-![Complaint Details](pics/complaint-details.png)
-*Public complaint view showing status, details, and public comments*
-
 ### Admin Interface
-![Admin Login](pics/admin-login.png)
+![Admin Login](pics/4.png)
 *Secure admin authentication with role-based access control*
 
-![Admin Dashboard](pics/admin-dashboard.png)
+![Admin Dashboard](pics/5.png)
 *Comprehensive admin dashboard with complaint management, filtering, and pagination*
 
-![Admin Complaint Details](pics/admin-complaint-details.png)
-*Full admin complaint view with status management, internal comments, and administrative actions*
 
 ## 🔄 Assumptions and Tradeoffs
 
