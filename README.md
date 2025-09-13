@@ -2,6 +2,9 @@
 
 A professional complaint management system with secure admin dashboard and public complaint tracking.
 
+![Title](head.png)
+
+
 ## 🚀 Features
 
 ### Public Features
